@@ -1,22 +1,13 @@
----
-title: "CU, Zn, Fe in brains of NFL knock-out mice"
-author: "Bindoff, A."
-date: "7th June 2018"
-output:
-  html_document: 
-      code_folding: "hide"
-      fig_width: 10
----
+CU, Zn, Fe in brains of NFL knock-out mice
+================
+Bindoff, A.
+7th June 2018
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
-```
+# 
 
-# {.tabset}
+## Data handling
 
-## Data handling 
-
-```{r load, message = F, warning = F}
+``` r
 library(readr)
 library(dplyr)
 library(ggplot2)
@@ -28,55 +19,49 @@ library(lmerTest)
 
 df <- read.csv(file = "https://raw.githubusercontent.com/ABindoff/nfl-ko_metals/master/zn_fe_cu_nfl.csv")
 lab <- c("WT", "NFL-KO")
-
 ```
 
-```{r transformation, message = F, warning = F, eval = T}
+``` r
 df$Cu[df$Cu >= 320] <- NA   # after discussion with PA and GM, assumed to be measurement error
 df$logFe <- log(df$Fe)
 df$logZn <- log(df$Zn)
 df$logCu <- log(df$Cu)
 ```
-  
 
+    ## # A tibble: 4 x 3
+    ## # Groups:   age [2]
+    ##   age   strain     n
+    ##   <fct> <fct>  <int>
+    ## 1 5     WT         7
+    ## 2 5     NFL-KO    11
+    ## 3 22    WT         7
+    ## 4 22    NFL-KO     6
 
-```{r, echo = F}
-`%nin%` <- Negate(`%in%`)
-df <- dplyr::filter(df, id %nin% c("238", "3183", "161470")) %>%
-  mutate(strain = factor(strain, levels = c("WT", "NFL-KO")),
-         age = factor(age, levels = c(5, 22)))
+Some observations were determined not to be outliers but appear
+disproportionate in figures. These were identified and plotted as values
+instead of points in Fig 1 & Fig 2.
 
-
-df %>% group_by(age, strain) %>%
-  summarise(n = length(unique(id)))
-
-```
-
-Some observations were determined not to be outliers but appear disproportionate in figures. These were identified and plotted as values instead of points in Fig 1 & Fig 2.  
-
-```{r}
+``` r
 df$zn.label <- ifelse(df$Zn > 180, as.character(round(df$Zn, 1)), NA)
 df$cu.label <- ifelse(df$Cu > 50, as.character(round(df$Cu, 1)), NA)
-
-
 ```
 
 ## Mixed models
 
-```{r}
+``` r
 fit.cu <- lmer(Cu ~ region*strain + strain*age + region*age + (1|id), df)
 fit.zn <- lmer(logZn ~ region*strain + strain*age + region*age + (1|id), df)
 fit.fe <- lmer(logFe ~ region*strain + strain*age + region*age + (1|id), df)
-
 ```
-  
-Estimate marginal means over regions. Confidence intervals estimated using Kenward-Roger approximation of degrees of freedom. 
 
-Russell Lenth (2019). emmeans: Estimated Marginal Means, aka Least-Squares Means. R package version 1.3.4.
-  https://CRAN.R-project.org/package=emmeans
+Estimate marginal means over regions. Confidence intervals estimated
+using Kenward-Roger approximation of degrees of freedom.
 
-```{r fe_emm, warning = F, message = F}
+Russell Lenth (2019). emmeans: Estimated Marginal Means, aka
+Least-Squares Means. R package version 1.3.4.
+<https://CRAN.R-project.org/package=emmeans>
 
+``` r
 nd.fe <- ggeffects::ggemmeans(fit.fe, terms = c("strain", "age"), type = "fe", x.as.factor = TRUE) %>%
   transmute(age = group,
             strain = x,
@@ -92,9 +77,7 @@ nd.fe.sr <- ggeffects::ggemmeans(fit.fe, terms = c("strain", "region"), type = "
             upr = conf.high)
 ```
 
-
-```{r cu_emm, warning = F, message = F}
-
+``` r
 nd.cu <- ggeffects::ggemmeans(fit.cu, terms = c("strain", "age"), type = "fe", x.as.factor = TRUE) %>%
   transmute(age = group,
             strain = x,
@@ -111,11 +94,9 @@ nd.cu.sr <- ggeffects::ggemmeans(fit.cu, terms = c("strain", "region"), type = "
             lwr = conf.low,
             upr = conf.high)
 nd.cu.sr$lwr <- ifelse(nd.cu.sr$lwr < 0, 0, nd.cu.sr$lwr)
-
 ```
 
-```{r zn_emm, warning = F, message = F}
-
+``` r
 nd.zn <- ggeffects::ggemmeans(fit.zn, terms = c("strain", "age"), type = "fe", x.as.factor = TRUE) %>%
   transmute(age = group,
             strain = x,
@@ -134,8 +115,7 @@ nd.zn.sr <- ggeffects::ggemmeans(fit.zn, terms = c("strain", "region"), type = "
 
 ## Figures
 
-
-```{r}
+``` r
 pa = 0.575
 dw = 0.95
 set.seed(42)
@@ -152,8 +132,7 @@ df$sizes <- rnorm(nrow(df), 1.5, 0.1)
 sz <- c(2,2,2,2,2,2)
 ```
 
-```{r}
-
+``` r
 foo <- as_labeller(c(`5` = "5 months", `22` = "22 months"))
 
 znplot <- ggplot(nd.zn, aes(x = strain, y = exp(fit), ymin = exp(lwr), ymax = exp(upr))) +
@@ -188,8 +167,9 @@ znplot <- ggplot(nd.zn, aes(x = strain, y = exp(fit), ymin = exp(lwr), ymax = ex
 znplot
 ```
 
-```{r}
+![](analysis_and_figures_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
+``` r
 feplot <- ggplot(nd.fe, aes(x = strain, y = exp(fit), ymin = exp(lwr), ymax = exp(upr))) +
   scale_colour_manual(values = pal,
                         name = element_text("Region")) +
@@ -217,8 +197,9 @@ feplot <- ggplot(nd.fe, aes(x = strain, y = exp(fit), ymin = exp(lwr), ymax = ex
 feplot
 ```
 
-```{r}
+![](analysis_and_figures_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
+``` r
 cuplot <- ggplot(nd.cu, aes(x = strain, y = fit, ymin = lwr, ymax = upr)) +
   scale_colour_manual(values = pal,
                         name = NULL) +
@@ -248,16 +229,14 @@ cuplot <- ggplot(nd.cu, aes(x = strain, y = fit, ymin = lwr, ymax = upr)) +
 cuplot
 ```
 
+![](analysis_and_figures_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
-```{r eval = FALSE}
+``` r
 ggsave(file = "fig1.tiff", plot = gridExtra::grid.arrange(feplot, znplot, cuplot, ncol = 1),
        width = 125, height = 240, units = "mm", device = "tiff", dpi = 600)
-
 ```
 
-
-```{r fe_bootstrap, eval = FALSE}
-
+``` r
 # nd.fe <- expand.grid(age = '22',
 #                      strain = factor(levels(df$strain), levels = c('WT', 'NFL-KO')),
 #                      region = factor(levels(df$region)))
@@ -270,10 +249,9 @@ ggsave(file = "fig1.tiff", plot = gridExtra::grid.arrange(feplot, znplot, cuplot
 # nd.fe$lwr <- apply(bootfit$t, 2, quantile, 0.025)
 # nd.fe$upr <- apply(bootfit$t, 2, quantile, 0.975)
 # nd.fe$fit <- apply(bootfit$t, 2, mean)
-
 ```
 
-```{r}
+``` r
 dw = 0.5
 p.fe <- ggplot(nd.fe.sr, aes(x = region, y = exp(fit), ymin = exp(lwr), ymax = exp(upr), colour = strain)) +
   ggbeeswarm::geom_quasirandom(data = df, inherit.aes = FALSE,
@@ -296,8 +274,9 @@ p.fe <- ggplot(nd.fe.sr, aes(x = region, y = exp(fit), ymin = exp(lwr), ymax = e
 p.fe
 ```
 
+![](analysis_and_figures_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
-```{r}
+``` r
 p.zn <- ggplot(nd.zn.sr, aes(x = region, y = exp(fit), ymin = exp(lwr), ymax = exp(upr), colour = strain)) +
  ggbeeswarm::geom_quasirandom(data = df, inherit.aes = FALSE,
              aes(x = region, y = Zn, colour = strain, group = strain),
@@ -322,8 +301,9 @@ p.zn <- ggplot(nd.zn.sr, aes(x = region, y = exp(fit), ymin = exp(lwr), ymax = e
 p.zn
 ```
 
+![](analysis_and_figures_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
-```{r}
+``` r
 p.cu <- ggplot(nd.cu.sr, aes(x = region, y = fit, ymin = lwr, ymax = upr, colour = strain)) +
   ggbeeswarm::geom_quasirandom(data = df, inherit.aes = FALSE,
              aes(x = region, y = Cu, colour = strain, group = strain),
@@ -348,15 +328,16 @@ p.cu <- ggplot(nd.cu.sr, aes(x = region, y = fit, ymin = lwr, ymax = upr, colour
 p.cu
 ```
 
-```{r eval = FALSE}
+![](analysis_and_figures_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+
+``` r
 ggsave(file = "fig2.tiff", plot = gridExtra::grid.arrange(p.fe, p.zn, p.cu, ncol = 1),
        width = 125, height = 240, units = "mm", device = "tiff", dpi = 600)
-
 ```
 
-## Standardized effect sizes  
+## Standardized effect sizes
 
-```{r}
+``` r
 # calculate ICC for each model
 
 library(MuMIn)
@@ -423,16 +404,14 @@ marginal.strain.age.fe <- round(f2(rABfe[1], rA[1]),4)
 
 rA <- r.squaredGLMM(fit.fe.strain)
 marginal.strain.fe <- round(f2(rABfe[1], rA[1]), 2)
-
 ```
 
-pseudo- $f^2_{Cu_{strain}}$ = `r marginal.strain.cu`  
-pseudo- $f^2_{Fe_{strain}}$ = `r marginal.strain.fe`  
-pseudo- $f^2_{Zn_{strain}}$ = `r marginal.strain.zn`  
+pseudo- \(f^2_{Cu_{strain}}\) = 0.09  
+pseudo- \(f^2_{Fe_{strain}}\) = 0.25  
+pseudo- \(f^2_{Zn_{strain}}\) = 0.27
 
+## Reproducibility
 
-## Reproducibility  
-
-```{r eval = TRUE}
+``` r
 print(sessionInfo())
 ```

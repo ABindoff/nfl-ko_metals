@@ -1,20 +1,18 @@
 ---
-title: "CU, Zn, Fe in brains of NFL knock-out mice"
 author: "Bindoff, A."
-date: "7th June 2018"
+date: "4th July 2019"
 output:
-  html_document: 
-      code_folding: "hide"
-      fig_width: 10
+  github_document: default
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ```
 
-# {.tabset}
+Reproducible analysis for Vickers et al. (*in press*)  
 
-## Data handling 
+Data are available at [github.com/ABindoff/nfl-ko_metals/zn_fe_cu_nfl.csv](https://raw.githubusercontent.com/ABindoff/nfl-ko_metals/master/zn_fe_cu_nfl.csv). R code at [https://github.com/ABindoff/nfl-ko_metals/blob/master/analysis_and_figures.Rmd](https://github.com/ABindoff/nfl-ko_metals/blob/master/analysis_and_figures.Rmd). 
+
 
 ```{r load, message = F, warning = F}
 library(readr)
@@ -26,7 +24,7 @@ library(lme4)
 library(latex2exp)
 library(lmerTest)
 
-df <- read.csv(file = "https://raw.githubusercontent.com/ABindoff/nfl-ko_metals/master/zn_fe_cu_nfl.csv")
+df <- read.csv(file = "zn_fe_cu_nfl.csv")
 lab <- c("WT", "NFL-KO")
 
 ```
@@ -52,7 +50,6 @@ df %>% group_by(age, strain) %>%
 
 ```
 
-Some observations were determined not to be outliers but appear disproportionate in figures. These were identified and plotted as values instead of points in Fig 1 & Fig 2.  
 
 ```{r}
 df$zn.label <- ifelse(df$Zn > 180, as.character(round(df$Zn, 1)), NA)
@@ -63,7 +60,7 @@ df$cu.label <- ifelse(df$Cu > 50, as.character(round(df$Cu, 1)), NA)
 
 ## Mixed models
 
-```{r}
+```{r echo = TRUE}
 fit.cu <- lmer(Cu ~ region*strain + strain*age + region*age + (1|id), df)
 fit.zn <- lmer(logZn ~ region*strain + strain*age + region*age + (1|id), df)
 fit.fe <- lmer(logFe ~ region*strain + strain*age + region*age + (1|id), df)
@@ -134,6 +131,7 @@ nd.zn.sr <- ggeffects::ggemmeans(fit.zn, terms = c("strain", "region"), type = "
 
 ## Figures
 
+Some observations were determined not to be outliers but appear disproportionate in figures. These were identified and plotted as values instead of points.  
 
 ```{r}
 pa = 0.575
@@ -433,6 +431,6 @@ pseudo- $f^2_{Zn_{strain}}$ = `r marginal.strain.zn`
 
 ## Reproducibility  
 
-```{r eval = TRUE}
-print(sessionInfo())
+```{r}
+sessionInfo()
 ```

@@ -470,7 +470,7 @@ library(lme4)
 library(latex2exp)
 library(lmerTest)
 
-df &lt;- read.csv(file = &quot;zn_fe_cu_nfl.csv&quot;)
+df &lt;- read.csv(file = &quot;https://raw.githubusercontent.com/ABindoff/nfl-ko_metals/master/zn_fe_cu_nfl.csv&quot;)
 lab &lt;- c(&quot;WT&quot;, &quot;NFL-KO&quot;)</code></pre>
 <pre class="r"><code>df$Cu[df$Cu &gt;= 320] &lt;- NA   # after discussion with PA and GM, assumed to be measurement error
 df$logFe &lt;- log(df$Fe)
@@ -484,7 +484,7 @@ df$logCu &lt;- log(df$Cu)</code></pre>
 ## 2 5     NFL-KO    11
 ## 3 22    WT         7
 ## 4 22    NFL-KO     6</code></pre>
-<p>Some observations were determined not to be outliers but appear disproportionate in figures. These were identified and plotted as values instead of points in Fig 2.</p>
+<p>Some observations were determined not to be outliers but appear disproportionate in figures. These were identified and plotted as values instead of points in Fig 1 &amp; Fig 2.</p>
 <pre class="r"><code>df$zn.label &lt;- ifelse(df$Zn &gt; 180, as.character(round(df$Zn, 1)), NA)
 df$cu.label &lt;- ifelse(df$Cu &gt; 50, as.character(round(df$Cu, 1)), NA)</code></pre>
 </div>
@@ -800,7 +800,7 @@ pseudo- <span class="math inline">\(f^2_{Zn_{strain}}\)</span> = 0.27</p>
 </div>
 <div id="reproducibility" class="section level2">
 <h2>Reproducibility</h2>
-<pre class="r"><code>sessionInfo()</code></pre>
+<pre class="r"><code>print(sessionInfo())</code></pre>
 <pre><code>## R version 3.6.0 (2019-04-26)
 ## Platform: x86_64-w64-mingw32/x64 (64-bit)
 ## Running under: Windows 10 x64 (build 17134)
