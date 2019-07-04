@@ -3,6 +3,7 @@ title: "CU, Zn, Fe in brains of NFL knock-out mice"
 author: "Bindoff, A."
 date: "7th June 2018"
 output:
+  github_document: default
   html_document: 
       code_folding: "hide"
       fig_width: 10
